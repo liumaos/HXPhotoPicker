@@ -18,12 +18,12 @@
 #import "HXCameraBottomView.h"
 #import "HX_PhotoEditViewController.h"
 #import "HXCustomNavigationController.h"
-#import <CoreLocation/CoreLocation.h>
+//#import <CoreLocation/CoreLocation.h>
 
 @interface HXCustomCameraViewController ()
 <HXCustomPreviewViewDelegate ,
-HXCustomCameraControllerDelegate ,
-CLLocationManagerDelegate
+HXCustomCameraControllerDelegate
+//CLLocationManagerDelegate
 >
 @property (strong, nonatomic) HXCustomCameraController *cameraController;
 @property (strong, nonatomic) HXCustomPreviewView *previewView;
@@ -41,8 +41,8 @@ CLLocationManagerDelegate
 @property (strong, nonatomic) UIButton *videoCropBtn;
 @property (assign, nonatomic) BOOL addAudioInputComplete;
 @property (strong, nonatomic) NSURL *videoURL;
-@property (strong, nonatomic) CLLocationManager *locationManager;
-@property (strong, nonatomic) CLLocation *location;
+//@property (strong, nonatomic) CLLocationManager *locationManager;
+//@property (strong, nonatomic) CLLocation *location;
 @property (strong, nonatomic) UIVisualEffectView *effectView;
 @property (strong, nonatomic) UINavigationBar *customNavigationBar;
 @property (strong, nonatomic) UINavigationItem *navItem;
@@ -103,9 +103,9 @@ CLLocationManagerDelegate
 //    }
     self.view.backgroundColor = [UIColor blackColor];
     if (self.manager.configuration.cameraCanLocation && HX_ALLOW_LOCATION) {
-        if ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusDenied) {
-            [self.locationManager startUpdatingLocation];
-        }
+//        if ([CLLocationManager authorizationStatus] != kCLAuthorizationStatusDenied) {
+//            [self.locationManager startUpdatingLocation];
+//        }
     }
     if (self.manager.configuration.videoMaximumDuration > self.manager.configuration.videoMaximumSelectDuration) {
         self.manager.configuration.videoMaximumDuration = self.manager.configuration.videoMaximumSelectDuration;
@@ -357,9 +357,9 @@ CLLocationManagerDelegate
     }
 } 
 - (void)dealloc {
-    if (HX_ALLOW_LOCATION && _locationManager) {
-        [self.locationManager stopUpdatingLocation];
-    }
+//    if (HX_ALLOW_LOCATION && _locationManager) {
+//        [self.locationManager stopUpdatingLocation];
+//    }
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     if (HXShowLog) NSSLog(@"dealloc");
 }
@@ -394,7 +394,7 @@ CLLocationManagerDelegate
         cameraModel = [HXPhotoModel photoModelWithVideoURL:self.videoURL videoTime:self.time];
     }
     cameraModel.creationDate = [NSDate date];
-    cameraModel.location = self.location;
+//    cameraModel.location = self.location;
     HXWeakSelf
     if (!self.manager.configuration.saveSystemAblum) {
         if (cameraModel.subType == HXPhotoModelMediaSubTypePhoto) {
@@ -428,9 +428,9 @@ CLLocationManagerDelegate
         }else {
             [self.view hx_immediatelyShowLoadingHudWithText:nil];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                id location = self.location;
+//                id location = self.location;
                 if (!self.videoURL) {
-                    [HXPhotoTools savePhotoToCustomAlbumWithName:self.manager.configuration.customAlbumName photo:self.imageView.image location:location complete:^(HXPhotoModel *model, BOOL success) {
+                    [HXPhotoTools savePhotoToCustomAlbumWithName:self.manager.configuration.customAlbumName photo:self.imageView.image location:nil complete:^(HXPhotoModel *model, BOOL success) {
                         if (success) {
                             if (weakSelf.manager.configuration.cameraPhotoJumpEdit) {
                                 [weakSelf hx_presentPhotoEditViewControllerWithManager:weakSelf.manager photoModel:cameraModel delegate:nil done:^(HXPhotoModel *beforeModel, HXPhotoModel *afterModel, HXPhotoEditViewController *viewController) {
@@ -447,7 +447,7 @@ CLLocationManagerDelegate
                         }
                     }];
                 }else {
-                    [HXPhotoTools saveVideoToCustomAlbumWithName:self.manager.configuration.customAlbumName videoURL:self.videoURL location:location complete:^(HXPhotoModel *model, BOOL success) {
+                    [HXPhotoTools saveVideoToCustomAlbumWithName:self.manager.configuration.customAlbumName videoURL:self.videoURL location:nil complete:^(HXPhotoModel *model, BOOL success) {
                         [weakSelf.view hx_handleLoading:NO];
                         if (success) {
                             model.videoURL = weakSelf.videoURL;
@@ -538,7 +538,7 @@ CLLocationManagerDelegate
         vc.saveAlbum = self.manager.configuration.saveSystemAblum;
         vc.photoModel = model;
         vc.albumName = self.manager.configuration.customAlbumName;
-        vc.location = self.location;
+//        vc.location = self.location;
         vc.finishBlock = ^(HXPhotoEdit * _Nullable photoEdit, HXPhotoModel * _Nonnull photoModel, HX_PhotoEditViewController * _Nonnull viewController) {
             if (photoModel.photoEdit) {
                 photoModel = [HXPhotoModel photoModelWithImage:photoModel.photoEdit.editPreviewImage];
@@ -924,35 +924,35 @@ CLLocationManagerDelegate
     }
     return _effectView;
 }
-- (CLLocationManager *)locationManager {
-    if (!_locationManager) {
-        _locationManager = [[CLLocationManager alloc] init];
-        _locationManager.delegate = self;
-        _locationManager.desiredAccuracy = kCLLocationAccuracyBest;
-        _locationManager.distanceFilter = kCLDistanceFilterNone;
-        [_locationManager requestWhenInUseAuthorization];
-    }
-    return _locationManager;
-}
+//- (CLLocationManager *)locationManager {
+//    if (!_locationManager) {
+//        _locationManager = [[CLLocationManager alloc] init];
+//        _locationManager.delegate = self;
+//        _locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+//        _locationManager.distanceFilter = kCLDistanceFilterNone;
+//        [_locationManager requestWhenInUseAuthorization];
+//    }
+//    return _locationManager;
+//}
 #pragma mark - < CLLocationManagerDelegate >
-- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
-    if (locations.lastObject) {
-        self.location = locations.lastObject;
-    }
-}
-- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
-    if(error.code == kCLErrorLocationUnknown) {
-        if (HXShowLog) NSSLog(@"定位失败，无法检索位置");
-    }
-    else if(error.code == kCLErrorNetwork) {
-        if (HXShowLog) NSSLog(@"定位失败，网络问题");
-    }
-    else if(error.code == kCLErrorDenied) {
-        if (HXShowLog) NSSLog(@"定位失败，定位权限的问题");
-        [self.locationManager stopUpdatingLocation];
-        self.locationManager = nil;
-    }
-}
+//- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
+//    if (locations.lastObject) {
+//        self.location = locations.lastObject;
+//    }
+//}
+//- (void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error {
+//    if(error.code == kCLErrorLocationUnknown) {
+//        if (HXShowLog) NSSLog(@"定位失败，无法检索位置");
+//    }
+//    else if(error.code == kCLErrorNetwork) {
+//        if (HXShowLog) NSSLog(@"定位失败，网络问题");
+//    }
+//    else if(error.code == kCLErrorDenied) {
+//        if (HXShowLog) NSSLog(@"定位失败，定位权限的问题");
+//        [self.locationManager stopUpdatingLocation];
+//        self.locationManager = nil;
+//    }
+//}
 @end
 
 @interface HXCustomCameraPlayVideoView ()
